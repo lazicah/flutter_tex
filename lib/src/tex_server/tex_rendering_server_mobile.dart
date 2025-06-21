@@ -6,7 +6,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tex/flutter_tex.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
+import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 /// A rendering server for TeXView. This is backed by a [LocalhostServer] and a [WebViewControllerPlus] for Andtoid, iOS and MacOS.
 /// Make sure to call [start] before using the [TeXRenderingServer].
@@ -62,7 +64,7 @@ class TeXRenderingServer {
 /// communication between the WebView and the Dart code, handling events like
 /// page finished loading, tap events, and TeX view rendered events.
 class TeXRenderingController {
-  final WebViewControllerPlus webViewControllerPlus = WebViewControllerPlus();
+  late WebViewControllerPlus webViewControllerPlus;
   final String baseUrl =
       "http://localhost:${TeXRenderingServer.port!}/packages/flutter_tex/core/flutter_tex.html";
 
@@ -71,6 +73,24 @@ class TeXRenderingController {
       onTeXViewRenderedCallback;
 
   Future<WebViewControllerPlus> initController() {
+    PlatformWebViewControllerCreationParams params =
+        const PlatformWebViewControllerCreationParams();
+    if (WebViewPlatform.instance! is WebKitWebViewPlatform) {
+      params = WebKitWebViewControllerCreationParams
+          .fromPlatformWebViewControllerCreationParams(
+        params,
+        allowsInlineMediaPlayback: true,
+      );
+    } else if (WebViewPlatform.instance is AndroidWebViewPlatform) {
+      params = AndroidWebViewControllerCreationParams
+          .fromPlatformWebViewControllerCreationParams(
+        params,
+      );
+    }
+
+    webViewControllerPlus =
+        WebViewControllerPlus.fromPlatformCreationParams(params);
+
     var controllerCompleter = Completer<WebViewControllerPlus>();
 
     webViewControllerPlus
