@@ -114,8 +114,11 @@ class TeXRenderingController {
           },
           onNavigationRequest: (request) {
             if (request.url.contains(
-              baseUrl,
-            )) {
+                  baseUrl,
+                ) ||
+                request.url.contains(
+                  'youtube.com',
+                )) {
               return NavigationDecision.navigate;
             } else {
               _launchURL(request.url);
